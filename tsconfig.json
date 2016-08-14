@@ -1,0 +1,21 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": false,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "outDir": "build"
+    },
+    "files": [
+        "typings/index.d.ts",
+        "declarations.d.ts",
+        "src/amazon.ts",
+        "src/inject_jquery.ts",
+        "src/log.ts",
+        "src/login.ts",
+        "src/main.ts",
+        "src/orders.ts"
+    ]
+}

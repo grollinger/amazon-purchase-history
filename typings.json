@@ -1,0 +1,6 @@
+{
+  "globalDependencies": {
+    "jquery": "registry:dt/jquery#1.10.0+20160704162008",
+    "phantomjs": "registry:dt/phantomjs#1.9.0+20160316155526"
+  }
+}
