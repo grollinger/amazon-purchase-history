@@ -14,10 +14,8 @@
     },
     "files": [
         "typings/index.d.ts",
-        "src/amazon.ts",
-        "src/inject_jquery.ts",
-        "src/login.ts",
+        "src/loginAmazon.ts",
         "src/main.ts",
-        "src/orders.ts"
+        "src/scrapeOrders.ts"
     ]
 }
