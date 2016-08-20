@@ -1,6 +1,9 @@
-import { create as WebPage } from 'webpage';
-import {login_amazon }from './login';
+require('any-promise/register/bluebird');
+import {login_amazon } from './login';
+import log = require('winston');
 
-let page = WebPage();
+log.level = "silly";
 
-login_amazon(page);
+log.info("Amazon Purchase Importer");
+ 
+login_amazon();

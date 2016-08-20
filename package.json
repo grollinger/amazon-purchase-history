@@ -1,0 +1,35 @@
+{
+  "name": "amazon-purchase-history",
+  "version": "0.1.0",
+  "description": "Downloads amazon order history using PhantomJS",
+  "main": "build/src/main.js",
+  "dependencies": {
+    "bluebird": "^3.4.1",
+    "jquery": "^3.1.0",
+    "mz": "^2.4.0",
+    "node-horseman": "^3.1.1",
+    "winston": "^2.2.0"
+  },
+  "devDependencies": {},
+  "bin": {
+    "import-amazon": "build/src/main.js"
+  },
+  "scripts": {
+    "test": "build/test/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/grollinger/amazon-purchase-history.git"
+  },
+  "keywords": [
+    "amazon",
+    "purchase",
+    "order"
+  ],
+  "author": "Georg Rollinger",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/grollinger/amazon-purchase-history/issues"
+  },
+  "homepage": "https://github.com/grollinger/amazon-purchase-history#readme"
+}

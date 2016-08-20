@@ -1,6 +1,10 @@
 {
   "globalDependencies": {
+    "bluebird": "registry:dt/bluebird#3.0.0+20160811111256",
     "jquery": "registry:dt/jquery#1.10.0+20160704162008",
-    "phantomjs": "registry:dt/phantomjs#1.9.0+20160316155526"
+    "mz": "registry:dt/mz#0.0.0+20160811111312",
+    "node": "registry:dt/node#6.0.0+20160813124416",
+    "node-horseman": "github:BeeZet/node-horseman-typings#d27cb1b5487ae214c97a1fba3ce4e75c5516743a",
+    "winston": "registry:dt/winston#0.0.0+20160417152829"
   }
 }

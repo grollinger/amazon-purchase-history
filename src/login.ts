@@ -1,95 +1,93 @@
-import fs = require('fs');
-import system = require('system');
-import inject_jquery = require('./inject_jquery');
-import { username, password } from './credentials'
-import * as log from './log'
+import * as fs from 'mz/fs';
+import * as readline from 'mz/readline'
+import * as Horseman from 'node-horseman'
+import * as Promise from 'bluebird'
+import { username, password } from './credentials';
+import log = require('winston');
 
-const COOKIE_JAR = "cookies.json"
-const LOGIN_URL = "https://www.amazon.de/ap/signin/254-7475757-8063566?_encoding=UTF8&accountStatusPolicy=P1&openid.assoc_handle=deflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.de%2Fgp%2Fcss%2Forder-history%2F254-7475757-8063566%3Fie%3DUTF8%26*Version*%3D1%26*entries*%3D0&pageId=webcs-yourorder&showRmrMe=1"
+
+
+const COOKIE_JAR = "cookies.txt";
+const CAPTCHA_SCREENSHOT = "captcha.png";
+const LOGIN_URL = "https://www.amazon.de/gp/your-account/order-history/ref=oh_aui_menu_date?ie=UTF8&orderFilter=months-6"
 const USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.6 Safari/537.11";
 
-interface AmazonPage extends WebPage {
-    onLoggedIn?: () => void;
+const SELECTOR_EMAIL = '#ap_email';
+const SELECTOR_PASSW = '#ap_password';
+const SELECTOR_REMEMBER = 'input[name="rememberMe"]';
+const SELECTOR_SUBMIT = 'input#signInSubmit';
+const SELECTOR_CAPTCHA = '#auth-captcha-guess';
+
+function loginAmazonAction(username, password)
+{
+    log.debug("Logging into Amazon");
+    let self: Horseman.HorsemanPage = this;
+
+    function promptForCaptcha() 
+    {
+        log.debug("Prompting for CAPTCHA");
+        
+        let cli = readline.createInterface(process.stdin, process.stdout);
+        return cli.question("What does the CAPTCHA say?")
+            .finally(() => cli.close())
+    }
+
+    function solveCaptcha() 
+    {
+        log.debug("Solving CAPTCHA");
+        return self
+            .screenshot(CAPTCHA_SCREENSHOT)
+            .then(promptForCaptcha)
+            .then((captcha) => {
+                return self
+                    .value(SELECTOR_CAPTCHA, captcha)
+            });
+    }
+
+    function submitLoginPage()
+    {
+        log.debug("Submitting login page");
+        return self
+            .value(SELECTOR_EMAIL, username)
+            .value(SELECTOR_PASSW, password)
+            .click(SELECTOR_REMEMBER)
+            .click(SELECTOR_SUBMIT)
+            .waitForNextPage();
+    }
+
+    return self
+        .exists(SELECTOR_CAPTCHA)
+        .then((has_captcha) => {
+            log.debug("Page has a captcha? ", has_captcha);
+            if(has_captcha) {
+                return solveCaptcha();
+            }
+        })
+        .exists(SELECTOR_EMAIL)
+        .then((is_login_page) => {
+            log.debug("Page is a login page? ", is_login_page);
+            if(is_login_page)
+            {
+                return submitLoginPage();
+            }
+        });
 }
 
-export function login_amazon(page: WebPage)
+Horseman.registerAction('loginAmazon', loginAmazonAction);
+
+export function login_amazon()
 {
-    page.onConsoleMessage = log.debug;
     log.debug("Logging in to Amazon");
 
-    page.settings.userAgent = USER_AGENT;
-
-    inject_jquery(page);
-    
-    add_login_handlers(page);
-
-    page.open(LOGIN_URL);
-}
-
-function add_login_handlers(page: WebPage)
-{
-    let existing_handler = page.onLoadFinished;
-
-    page.onLoadFinished = (status) => {
-        log.debug("Page load finished");
-        if (existing_handler)
-        {
-            log.debug("Calling existing handler");
-            setTimeout(existing_handler, 0 , status);
-        }
-        log.debug("Calling login handler");
-        //page_loaded(page, status);
-    };
-}
-
-
-function page_loaded(page: AmazonPage, status: string) {
-    if (is_login_page(page))
-    {
-        log.debug("On Login Page");
-        if(is_captcha_page(page)) {
-            handle_captcha_page(page);
-        }
-        handle_login_page(page);
-    } else {
-        log.debug("On a non-login page");
-        console.log(page.evaluate(function() {
-            return document.title;
-        }));
-        phantom.exit();
-    }
-}
-
-function is_login_page(page: WebPage) {
-    return page.evaluate(function(){
-        return $('#ap_email') != null;
-    });       
-}
-
-function is_captcha_page(page: WebPage) {
-    return page.evaluate(function(){
-        return $('#auth-captcha-guess') != null;
-    });       
-}
-
-function handle_captcha_page(page: WebPage) {
-    let captcha = prompt_for_captcha();
-    
-    page.evaluate(function() {
-        return $('#auth-captcha-guess').val(captcha);
-    });
-}
-
-function handle_login_page(page: WebPage) {
-    page.evaluate(function() {
-        $('#ap_email').val(username);
-        $('#ap_password').val(password);
-        $('input#signInSubmit').click();
+    let horseman = new Horseman({
+        cookiesFile: COOKIE_JAR
     });
 
-}
+    horseman
+        .userAgent(USER_AGENT)
+        .open(LOGIN_URL)
+        .loginAmazon(username, password)
+        .close();
 
-function prompt_for_captcha() {
-    system.stdout.writeLine('CaptchaCode: ');
-    return system.stdin.readLine();
+    log.debug("Done Logging in");
 }
