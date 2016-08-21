@@ -1,7 +1,9 @@
 require('any-promise/register/bluebird');
+import * as Promise from 'bluebird';
 import log = require('winston');
 import './loginAmazon';
 import './scrapeOrders';
+import {Order} from './types';
 import * as Horseman from 'node-horseman';
 import {username, password} from './credentials';
 
@@ -17,9 +19,11 @@ const PURCHASE_HISTORY_URL =
 
 let horseman = new Horseman({cookiesFile: COOKIE_JAR});
 
-horseman.userAgent(USER_AGENT)
+let orders: Promise<Order[]> = horseman.userAgent(USER_AGENT)
     .open(PURCHASE_HISTORY_URL)
     .loginAmazon(username, password)
     .scrapeOrders()
-    .then((orders) => { log.debug("Orders on page:", JSON.stringify(orders)); })
-    .close();
+    .finally(() => horseman.close());
+
+orders
+    .then((orders) => { log.debug("Orders on page:", JSON.stringify(orders)); });

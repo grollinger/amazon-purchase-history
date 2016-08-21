@@ -1,19 +1,7 @@
 import * as Horseman from 'node-horseman';
 import * as moment from 'moment';
 
-export interface OrderItem
-{
-    title: string;
-    quantity: number;
-    price: string;
-}
-
-export interface Order {
-    number: string;
-    amount: string;
-    date: string;
-    items: OrderItem[];
-}
+import {Order, OrderItem} from './types'
 
 function scrapeOrders(): Order[]
 {
@@ -54,9 +42,17 @@ function scrapeOrders(): Order[]
             }
 
             let rightCol = $(line).find(".a-col-right")[0];
+            
+            let amount = $(rightCol).find(".a-color-price")[0].innerText;
+
             let rows = $(rightCol).children(".a-row");
             let title = rows[0].innerText;
-            let amount = rows[3].innerText;
+
+            // if there are multiple items of this type, remove the title prefix
+            if (quantity > 1) {
+                let prefix = quantity + " von ";
+                title = title.replace(prefix, "");
+            }
 
             items.push(
                 {

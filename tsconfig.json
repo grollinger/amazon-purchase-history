@@ -16,6 +16,7 @@
         "typings/index.d.ts",
         "src/loginAmazon.ts",
         "src/main.ts",
-        "src/scrapeOrders.ts"
+        "src/scrapeOrders.ts",
+        "src/types.ts"
     ]
 }
