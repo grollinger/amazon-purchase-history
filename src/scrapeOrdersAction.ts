@@ -5,9 +5,11 @@ import log = require('winston');
 import {Order, OrderItem} from './types';
 import {scrapeOrders, RawOrder} from './scrapeOrders';
 
-function parseDates(orders: RawOrder[]): Order[] {
+function processOrders(orders: RawOrder[]): Order[] {
+    // Parse the date string into moment objects
     for (var order of orders) {
-        order.date = moment(order.date_string, 'dd. MMMM YYYY', 'de');
+        order.date = moment(order.date_string, 'DD. MMMM YYYY', 'de');
+        //log.debug(`Date Parsed: ${order.date_string} => ${order.date}`);
         delete order.date_string;
     }
     return orders;
@@ -18,7 +20,7 @@ function scrapeOrdersAction() {
 
     return self
         .evaluate(scrapeOrders)
-        .then(parseDates);
+        .then(processOrders);
 }
 
 Horseman.registerAction('scrapeOrders', scrapeOrdersAction)

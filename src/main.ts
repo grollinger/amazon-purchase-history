@@ -2,10 +2,11 @@ require('any-promise/register/bluebird');
 import * as Promise from 'bluebird';
 import log = require('winston');
 import './loginAmazon';
-import './scrapeOrders';
+import './scrapeOrdersAction';
 import {Order, Priced} from './types';
 import * as Horseman from 'node-horseman';
 import {username, password} from './credentials';
+import {formatLedgerEntry} from './ledger';
 
 log.level = "silly";
 
@@ -17,10 +18,7 @@ const PURCHASE_HISTORY_URL =
     "https://www.amazon.de/gp/your-account/order-history/ref=oh_aui_menu_date?ie=UTF8&orderFilter=months-6" const COOKIE_JAR =
         "cookies.txt";
 
-const CURRENCY_SYMBOL = {
-    "EUR": "€",
-    "USD": "$"
-};
+
 
 let horseman = new Horseman({cookiesFile: COOKIE_JAR});
 
@@ -29,42 +27,6 @@ let orders: Promise<Order[]> = horseman.userAgent(USER_AGENT)
     .loginAmazon(username, password)
     .scrapeOrders()
     .finally(() => horseman.close());
-
-function formatLedgerEntry(order: Order)
-{
-    function formatAmount(p: Priced)
-    {
-        let symbol = CURRENCY_SYMBOL[p.currency];
-        let priceFixed = p.price.toFixed(2);
-        return `${priceFixed} ${symbol}`
-    }
-
-    let dateString = order.date.format("YYYY/MM/DD");
-
-    let itemsString = "";
-    for (var item of order.items) {
-        let amountString = formatAmount(item);
-        let valueString = "";
-        if (item.quantity > 1) {
-            valueString = `(${item.quantity} * ${amountString})`
-        }
-        else {
-            valueString = `${amountString}`
-        }
-
-        let itemString = `
-    Expenses:Imported    ${valueString}
-    ; ${item.title}`
-        itemsString = itemsString + itemString;
-    }
-
-    let totalString = formatAmount(order);
-    let withdrawalString = `
-    Assets:Checking     -${totalString}`
-
-    return `${dateString} ! (${order.number}) Amazon; Imported` +
-        itemsString + withdrawalString;
-}
 
 orders
     .then((orders) => {
