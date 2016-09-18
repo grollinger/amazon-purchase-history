@@ -1,4 +1,4 @@
-import {Order, OrderItem, Priced} from './types'
+import {Order, OrderItem, Price} from './types'
 
 export interface RawOrder extends Order {
     date_string: string;
@@ -15,7 +15,7 @@ export function scrapeOrders(): RawOrder[]
         return parseFloat(neutralString);
     }
 
-    function parsePrice(price: string): Priced {
+    function parsePrice(price: string): Price {
 
         let parts = price.split(' ', 2);
 
@@ -24,7 +24,7 @@ export function scrapeOrders(): RawOrder[]
 
         return {
             currency: currency,
-            price: amount
+            amount: amount
         };
     }
 
@@ -43,8 +43,8 @@ export function scrapeOrders(): RawOrder[]
 
         return {
             number: order_no,
-            price: price.price,
-            currency: price.currency,
+            total: price,
+            shipping: null,
             date: null,
             date_string: order_date,
             items: []
@@ -86,8 +86,7 @@ export function scrapeOrders(): RawOrder[]
             items.push(
                 {
                     title: title,
-                    price: price.price,
-                    currency: price.currency,
+                    price: price,
                     quantity: quantity
                 }
             );

@@ -1,19 +1,20 @@
 import * as moment from 'moment'
 
-export interface Priced
-{
-    price: number;
+export interface Price {
+    amount: number;
     currency: string;
 }
 
-export interface OrderItem extends Priced
-{
+export interface OrderItem {
+    price: Price;
     title: string;
     quantity: number;
 }
 
-export interface Order extends Priced {
+export interface Order {
     number: string;
+    total: Price;
+    shipping: Price;
     date: moment.Moment;
     items: OrderItem[];
 }

@@ -1,4 +1,4 @@
-import {Order, Priced} from './types';
+import {Order, Price} from './types';
 
 const CURRENCY_SYMBOL = {
     "EUR": "€",
@@ -7,10 +7,10 @@ const CURRENCY_SYMBOL = {
 
 export function formatLedgerEntry(order: Order)
 {
-    function formatAmount(p: Priced)
+    function formatPrice(p: Price)
     {
         let symbol = CURRENCY_SYMBOL[p.currency];
-        let priceFixed = p.price.toFixed(2);
+        let priceFixed = p.amount.toFixed(2);
         return `${priceFixed} ${symbol}`
     }
 
@@ -18,7 +18,7 @@ export function formatLedgerEntry(order: Order)
 
     let itemsString = "";
     for (var item of order.items) {
-        let amountString = formatAmount(item);
+        let amountString = formatPrice(item.price);
         let valueString = "";
         if (item.quantity > 1) {
             valueString = `(${item.quantity} * ${amountString})`
@@ -33,10 +33,17 @@ export function formatLedgerEntry(order: Order)
         itemsString = itemsString + itemString;
     }
 
-    let totalString = formatAmount(order);
+    let shippingString = "";
+    if (order.shipping.amount > 0) {
+        let shippingValue = formatPrice(order.shipping);
+        shippingString = `
+    Expenses:Shipping Costs    ${shippingValue}`;
+    }
+
+    let totalString = formatPrice(order.total);
     let withdrawalString = `
     Assets:Checking     -${totalString}`
 
     return `${dateString} ! (${order.number}) Amazon; Imported` +
-        itemsString + withdrawalString;
+        itemsString + shippingString + withdrawalString;
 }
