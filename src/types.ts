@@ -1,13 +1,19 @@
-export interface OrderItem
+import * as moment from 'moment'
+
+export interface Priced
+{
+    price: number;
+    currency: string;
+}
+
+export interface OrderItem extends Priced
 {
     title: string;
     quantity: number;
-    price: string;
 }
 
-export interface Order {
+export interface Order extends Priced {
     number: string;
-    amount: string;
-    date: string;
+    date: moment.Moment;
     items: OrderItem[];
 }

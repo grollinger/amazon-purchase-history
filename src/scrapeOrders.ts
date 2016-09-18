@@ -5,7 +5,29 @@ import {Order, OrderItem} from './types'
 
 function scrapeOrders(): Order[]
 {
-    function parseOrderInfo(orderElement: Element): Order{
+    function parseLocalFloat(f: string) {
+        let parts = f.split(/[,.]/);
+        let decimal = parts.pop();
+        let whole = parts.join();
+
+        let neutralString = whole + '.' + decimal;
+        return parseFloat(neutralString);
+    }
+
+    function parsePrice(price: string) {
+
+        let parts = price.split(' ', 2);
+
+        let currency = parts[0];
+        let amount = parseLocalFloat(parts[1]);
+
+        return {
+            currency: currency,
+            amount: amount
+        };
+    }
+
+    function parseOrderInfo(orderElement: Element) {
         let info = $(orderElement).find(".order-info")[0];
 
         let left_col = $(info).find(".a-col-left");
@@ -13,14 +35,17 @@ function scrapeOrders(): Order[]
         let right_col = $(info).find(".a-col-right");
 
         let order_date = $(left_fields[0]).find(".value")[0].innerText;
-        let order_amount =
-            $(left_fields[1]).find(".value")[0].innerText;
+        let price = parsePrice(
+            $(left_fields[1]).find(".value")[0].innerText
+        );
         let order_no = right_col.find(".value")[0].innerText;
 
-        return {
+        return <Order>{
             number: order_no,
-            amount: order_amount,
-            date: order_date,
+            price: price.amount,
+            currency: price.currency,
+            date: null,
+            date_string: order_date,
             items: []
         };
     }
@@ -42,8 +67,11 @@ function scrapeOrders(): Order[]
             }
 
             let rightCol = $(line).find(".a-col-right")[0];
-            
-            let amount = $(rightCol).find(".a-color-price")[0].innerText;
+
+            let priceString = $(rightCol)
+                .find(".a-color-price")[0]
+                .innerText;
+            let price = parsePrice(priceString);
 
             let rows = $(rightCol).children(".a-row");
             let title = rows[0].innerText;
@@ -57,7 +85,8 @@ function scrapeOrders(): Order[]
             items.push(
                 {
                     title: title,
-                    price: amount,
+                    price: price.amount,
+                    currency: price.currency,
                     quantity: quantity
                 }
             );
@@ -100,13 +129,10 @@ function scrapeOrders(): Order[]
     return parseOrders(container);
 }
 
-function parseDates(orders: Order[])
-{
-    for (let order of orders) {
-        order.date =
-            moment(order.date, 'dd. MMMM YYYY', 'de').toISOString();
+function parseDates(orders): Order[] {
+    for (var order of orders) {
+        order.date = moment(order.date_string, 'dd. MMMM YYYY', 'de');
     }
-
     return orders;
 }
 
