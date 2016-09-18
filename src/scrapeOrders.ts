@@ -1,9 +1,10 @@
-import * as Horseman from 'node-horseman';
-import * as moment from 'moment';
+import {Order, OrderItem, Priced} from './types'
 
-import {Order, OrderItem} from './types'
+export interface RawOrder extends Order {
+    date_string: string;
+}
 
-function scrapeOrders(): Order[]
+export function scrapeOrders(): RawOrder[]
 {
     function parseLocalFloat(f: string) {
         let parts = f.split(/[,.]/);
@@ -14,7 +15,7 @@ function scrapeOrders(): Order[]
         return parseFloat(neutralString);
     }
 
-    function parsePrice(price: string) {
+    function parsePrice(price: string): Priced {
 
         let parts = price.split(' ', 2);
 
@@ -23,11 +24,11 @@ function scrapeOrders(): Order[]
 
         return {
             currency: currency,
-            amount: amount
+            price: amount
         };
     }
 
-    function parseOrderInfo(orderElement: Element) {
+    function parseOrderInfo(orderElement: Element): RawOrder {
         let info = $(orderElement).find(".order-info")[0];
 
         let left_col = $(info).find(".a-col-left");
@@ -40,9 +41,9 @@ function scrapeOrders(): Order[]
         );
         let order_no = right_col.find(".value")[0].innerText;
 
-        return <Order>{
+        return {
             number: order_no,
-            price: price.amount,
+            price: price.price,
             currency: price.currency,
             date: null,
             date_string: order_date,
@@ -85,7 +86,7 @@ function scrapeOrders(): Order[]
             items.push(
                 {
                     title: title,
-                    price: price.amount,
+                    price: price.price,
                     currency: price.currency,
                     quantity: quantity
                 }
@@ -109,9 +110,9 @@ function scrapeOrders(): Order[]
         return items;
     }
 
-    function parseOrders(container: JQuery): Order[]
+    function parseOrders(container: JQuery): RawOrder[]
     {
-        let orders: Order[] = [];
+        let orders: RawOrder[] = [];
 
         var infos = container.find(".order");
 
@@ -128,20 +129,3 @@ function scrapeOrders(): Order[]
 
     return parseOrders(container);
 }
-
-function parseDates(orders): Order[] {
-    for (var order of orders) {
-        order.date = moment(order.date_string, 'dd. MMMM YYYY', 'de');
-    }
-    return orders;
-}
-
-function scrapeOrdersAction() {
-    let self: Horseman.HorsemanPage = this;
-
-    return self
-        .evaluate(scrapeOrders)
-        .then(parseDates);
-}
-
-Horseman.registerAction('scrapeOrders', scrapeOrdersAction)

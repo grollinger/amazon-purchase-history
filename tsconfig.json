@@ -17,6 +17,7 @@
         "src/loginAmazon.ts",
         "src/main.ts",
         "src/scrapeOrders.ts",
+        "src/scrapeOrdersAction.ts",
         "src/types.ts"
     ]
 }
