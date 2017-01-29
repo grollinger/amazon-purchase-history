@@ -1,7 +1,7 @@
 {
-  "name": "amazon-purchase-history",
+  "name": "ledger-importer-amazon",
   "version": "0.1.0",
-  "description": "Downloads amazon order history using PhantomJS",
+  "description": "Import transactions from amazon using PhantomJS website scraping",
   "main": "build/src/main.js",
   "dependencies": {
     "bluebird": "^3.4.1",
@@ -12,25 +12,19 @@
     "winston": "^2.2.0"
   },
   "devDependencies": {},
-  "bin": {
-    "import-amazon": "build/src/main.js"
-  },
-  "scripts": {
-    "test": "build/test/main.js"
-  },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/grollinger/amazon-purchase-history.git"
+    "url": "git+ssh://git@github.com/grollinger/ledger-importer-amazon.git"
   },
   "keywords": [
     "amazon",
-    "purchase",
-    "order"
+    "ledger",
+    "import"
   ],
   "author": "Georg Rollinger",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/grollinger/amazon-purchase-history/issues"
+    "url": "https://github.com/grollinger/ledger-importer-amazon/issues"
   },
-  "homepage": "https://github.com/grollinger/amazon-purchase-history#readme"
+  "homepage": "https://github.com/grollinger/ledger-importer-amazon#readme"
 }
